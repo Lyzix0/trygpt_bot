@@ -1,0 +1,28 @@
+available_text_models: ["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-3.5-turbo-1106"]
+
+info:
+  gpt-3.5-turbo:
+    type: chat_completion
+    name: ChatGPT
+    description: ChatGPT — самая известная модель. Она <b>быстрая</b> и <b>дешевая</b>. Идеально подходит для повседневных задач.
+
+    price_per_1000_input_tokens: 0.0015
+    price_per_1000_output_tokens: 0.002
+
+    scores:
+      Ум: 3
+      Скорость: 5
+      Цена: 5
+
+  gpt-3.5-turbo-16k:
+    type: chat_completion
+    name: GPT-16K
+    description: ChatGPT — самая известная модель. Она <b>быстрая</b> и <b>дешевая</b>. Идеально подходит для повседневных задач. Возможность отправлять сообщение в 4 раза длиннее.
+
+    price_per_1000_input_tokens: 0.003
+    price_per_1000_output_tokens: 0.004
+
+    scores:
+      Ум: 3
+      Скорость: 5 91.206.17.186:57189:12345:12345
+      Цена: 5

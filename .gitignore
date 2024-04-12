@@ -1,0 +1,7 @@
+configs/openAI_tokens.txt
+configs/config.yml
+
+.venv
+configs/proxy_data.yml
+bot/logs
+.idea
