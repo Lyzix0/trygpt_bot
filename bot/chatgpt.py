@@ -16,9 +16,9 @@ OPENAI_OPTIONS = {
 }
 
 # ИСПОЛЬЗОВАНИЕ ПРОКСИ ОБЯЗАТЕЛЬНО!!! OPENAI запретил из россии отправлять запросы.
-PROXY_END_POINT = config.config_yaml["PROXY_END_POINT"]
-USERNAME = config.config_yaml["USERNAME"]
-PASSWORD = config.config_yaml["PASSWORD"]
+PROXY_END_POINT = config.config_yaml['PROXY_END_POINT']
+USERNAME = config.config_yaml['USERNAME']
+PASSWORD = config.config_yaml['PASSWORD']
 
 
 class ChatGPT:
@@ -62,7 +62,7 @@ class ChatGPT:
             return answer
 
         except Exception as e:
-            print(self.current_key, e)
+            logging.log(logging.WARNING, e)
             k += 1
             self.current_key = config.apiKeys[
                 random.randint(0, len(config.apiKeys) - 1)
@@ -71,7 +71,7 @@ class ChatGPT:
 
     @staticmethod
     def _generate_prompt_messages(
-        message, dialog_messages, chat_mode, in_dialogue: bool = True
+            message, dialog_messages, chat_mode, in_dialogue: bool = True
     ):
         prompt = config.chat_modes[chat_mode]["prompt_start"]
 
