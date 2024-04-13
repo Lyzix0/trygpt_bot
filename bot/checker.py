@@ -4,9 +4,9 @@ import aiohttp
 import configuration as config
 
 
-PROXY_END_POINT = config.config_yaml['PROXY_END_POINT']
-USERNAME = config.config_yaml['USERNAME']
-PASSWORD = config.config_yaml['PASSWORD']
+PROXY_END_POINT = config.config_yaml["PROXY_END_POINT"]
+USERNAME = config.config_yaml["USERNAME"]
+PASSWORD = config.config_yaml["PASSWORD"]
 
 
 def load_api_keys(file_path):

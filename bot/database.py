@@ -2,12 +2,13 @@ import uuid
 from datetime import datetime
 from typing import Optional, Any
 import configs
+import configuration as config
 from motor import motor_asyncio
 
 
 class Database:
     def __init__(self):
-        self.uri = "mongodb+srv://Lyzix:eLTdwatIxXoCzESH@db1.zd0t74q.mongodb.net/?retryWrites=true&w=majority"
+        self.uri = config.config_yaml["mongo_token"]
         self.client = motor_asyncio.AsyncIOMotorClient(self.uri)
         self.db = self.client["chatgpt_telegram_bot"]
 

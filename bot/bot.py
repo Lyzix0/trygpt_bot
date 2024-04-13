@@ -120,9 +120,9 @@ async def get_user_info(message: Message = None, callback: CallbackQuery = None)
     if not sub:
         str_sub = "ограниченная"
         text = (
-                hello_part
-                + f"\n\nID: <b>{user_id}</b>\nПодписка: <b>{str_sub}</b>\n\nЛимиты:\n"
-                  f"Осталось бесплатных запросов: <b>{prompts}</b> из 15"
+            hello_part
+            + f"\n\nID: <b>{user_id}</b>\nПодписка: <b>{str_sub}</b>\n\nЛимиты:\n"
+            f"Осталось бесплатных запросов: <b>{prompts}</b> из 15"
         )
     else:
         str_sub = "безлимитная"
@@ -134,7 +134,7 @@ async def get_user_info(message: Message = None, callback: CallbackQuery = None)
         if days_count % 10 == 1 and days_count % 100 != 11:
             p = 0
         elif 2 <= days_count % 10 <= 4 and (
-                days_count % 100 < 10 or days_count % 100 >= 20
+            days_count % 100 < 10 or days_count % 100 >= 20
         ):
             p = 1
         else:
@@ -142,9 +142,9 @@ async def get_user_info(message: Message = None, callback: CallbackQuery = None)
 
         days_plur = days[p]
         text = (
-                hello_part + f"\n\nID: <b>{user_id}</b>\nПодписка: <b>{str_sub}</b>"
-                             f"\nПодписка действительна до <b>{date_to_sub}</b> "
-                             f"({days_count} {days_plur})"
+            hello_part + f"\n\nID: <b>{user_id}</b>\nПодписка: <b>{str_sub}</b>"
+            f"\nПодписка действительна до <b>{date_to_sub}</b> "
+            f"({days_count} {days_plur})"
         )
 
     return text, keyboard
@@ -182,7 +182,7 @@ async def dialogue_button_creation(user_id: int, message_id: int = None):
     page = 1
     items_per_page = 3
     pages = [
-        dialogs[i: i + items_per_page][::-1]
+        dialogs[i : i + items_per_page][::-1]
         for i in range(0, len(dialogs), items_per_page)
     ]
 
@@ -282,7 +282,7 @@ async def handle_pagination(callback: CallbackQuery):
 
     items_per_page = 3
     pages = [
-        dialogs[i: i + items_per_page][::-1]
+        dialogs[i : i + items_per_page][::-1]
         for i in range(0, len(dialogs), items_per_page)
     ]
 
@@ -484,8 +484,8 @@ def get_chat_mode_menu(page_index: int):
 
     chat_mode_keys = list(config.chat_modes.keys())
     page_chat_mode_keys = chat_mode_keys[
-                          page_index * n_chat_modes_per_page: (page_index + 1) * n_chat_modes_per_page
-                          ]
+        page_index * n_chat_modes_per_page : (page_index + 1) * n_chat_modes_per_page
+    ]
 
     keyboard = []
     for chat_mode_key in page_chat_mode_keys:
@@ -632,7 +632,7 @@ async def is_sub_channel(callback: CallbackQuery):
 async def change_dots(message_id, chat_id):
     num_dots = 0
     for i in range(
-            100
+        100
     ):  # не ставлю бесконечный цикл, так после 1000 прохода ошибка (слишком частый редакт сообщения)
         message = f'Генерирую ответ{"." * num_dots}'
         await bot.edit_message_text(
@@ -714,8 +714,7 @@ async def main():
     scheduler.add_job(update_subs_users, "interval", hours=3)
     scheduler.add_job(check_payments, "interval", seconds=20)
     scheduler.add_job(
-        check_all_keys, "interval", days=1,
-        start_date=datetime(2023, 11, 14, 21, 12)
+        check_all_keys, "interval", days=1, start_date=datetime(2023, 11, 14, 21, 12)
     )
 
     print("Бот запущен!")
