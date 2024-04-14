@@ -1,0 +1,10 @@
+telegram_token: "your bot token"
+yoomoney_id: 'yoomoney id for payments'
+yoomoney_token: "yoomoney token"
+mongo_token: "mongo db token"
+n_chat_modes_per_page: 5
+
+# proxy data
+PROXY_END_POINT: ""
+USERNAME: ""
+PASSWORD: ""
