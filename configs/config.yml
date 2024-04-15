@@ -1,9 +1,10 @@
-telegram_token: "6162893726:AAGUopgCowLKBhjUkctcYcOI7hQm7B-th7s"
-yoomoney_id: '223071'
-yoomoney_token: "live_-VtZxbuG_HclG7z7cy4XvW0RqSEURAATpApGqUIEWH0"
-mongo_token: "mongodb+srv://Lyzix:eLTdwatIxXoCzESH@db1.zd0t74q.mongodb.net/?retryWrites=true&w=majority"
+telegram_token: "your bot token"
+yoomoney_id: 'yoomoney id for payments'
+yoomoney_token: "yoomoney token"
+mongo_token: "mongo db token"
 n_chat_modes_per_page: 5
 
-PROXY_END_POINT: "193.39.244.26:8000"
-USERNAME: "qE9pH6"
-PASSWORD: "aLX2j2"
+# proxy data
+PROXY_END_POINT: ""
+USERNAME: ""
+PASSWORD: ""
