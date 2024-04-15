@@ -7,7 +7,7 @@ from aiogram.fsm.state import State, StatesGroup
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 import configuration as config
-from aiogram import Bot, Dispatcher, types, Router, F
+from aiogram import Dispatcher, types, Router, F
 from aiogram.enums import ParseMode, ChatMemberStatus
 from aiogram.filters import CommandStart, Command
 from aiogram.types import (
@@ -20,18 +20,13 @@ from aiogram.types import (
     KeyboardButton,
 )
 import openai
-import database
+from routers.base import dialogue_button_creation, db, bot, payments, get_user_info
 from checker import load_api_keys, check_and_write_keys
-from payments import Payments
 from chatgpt import ChatGPT
+from routers import router as main_router
 
 dp = Dispatcher()
-db = database.Database()
-payments = Payments(
-    config.config_yaml["yoomoney_id"], config.config_yaml["yoomoney_token"], db
-)
-bot = Bot(config.config_yaml["telegram_token"], parse_mode=ParseMode.HTML)
-router = Router()
+dp.include_router(main_router)
 
 sub_button1 = InlineKeyboardButton(text="400₽ за 30 дней", callback_data="pay|30|400")
 sub_button2 = InlineKeyboardButton(text="200₽ за 7 дней", callback_data="pay|7|200")
@@ -64,7 +59,7 @@ class Form(StatesGroup):
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message):
-    await register_user_if_not_exists(message)
+    await db.register_user_if_not_exists(message)
 
     photo = FSInputFile("start_photo.jpg")
     button_channel = InlineKeyboardButton(
@@ -91,69 +86,16 @@ async def command_start_handler(message: Message):
 @dp.message(F.text == "Поддержка")
 @dp.message(Command("help"))
 async def help_handle(message: types.Message):
-    await register_user_if_not_exists(message)
+    await db.register_user_if_not_exists(message)
     await message.reply(
         config.help_text, parse_mode=ParseMode.HTML, reply_markup=keyboard_profile
     )
 
 
-async def get_user_info(message: Message = None, callback: CallbackQuery = None):
-    if message:
-        user = message.from_user
-        user_id = message.from_user.id
-    else:
-        user = callback.from_user
-        user_id = callback.from_user.id
-
-    button_dialogs = InlineKeyboardButton(text="Мои диалоги", callback_data="dialogs")
-    sub_menu_button = InlineKeyboardButton(
-        text="Управление подпиской", callback_data="subscribe"
-    )
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[[button_dialogs], [sub_menu_button]]
-    )
-
-    sub = await db.get_user_attribute(user_id, "subscriber")
-    prompts = await db.get_user_attribute(user_id, "available_prompts")
-
-    hello_part = f"""Привет, {user.username}!\nНадеюсь, у тебя всё круто!"""
-    if not sub:
-        str_sub = "ограниченная"
-        text = (
-                hello_part
-                + f"\n\nID: <b>{user_id}</b>\nПодписка: <b>{str_sub}</b>\n\nЛимиты:\n"
-                  f"Осталось бесплатных запросов: <b>{prompts}</b> из 15"
-        )
-    else:
-        str_sub = "безлимитная"
-        date_to_sub = await db.get_user_attribute(user_id, "to_subscribe_date")
-        date_to_sub = date_to_sub.date()
-        days_count = (date_to_sub - datetime.now().date()).days
-
-        days = ["день", "дня", "дней"]
-        if days_count % 10 == 1 and days_count % 100 != 11:
-            p = 0
-        elif 2 <= days_count % 10 <= 4 and (
-                days_count % 100 < 10 or days_count % 100 >= 20
-        ):
-            p = 1
-        else:
-            p = 2
-
-        days_plur = days[p]
-        text = (
-                hello_part + f"\n\nID: <b>{user_id}</b>\nПодписка: <b>{str_sub}</b>"
-                             f"\nПодписка действительна до <b>{date_to_sub}</b> "
-                             f"({days_count} {days_plur})"
-        )
-
-    return text, keyboard
-
-
 @dp.message(F.text == "Мой аккаунт")
 @dp.message(Command("info"))
 async def my_account(message: types.Message):
-    await register_user_if_not_exists(message)
+    await db.register_user_if_not_exists(message)
     user_info = await get_user_info(message)
     await bot.send_message(
         chat_id=message.from_user.id,
@@ -163,218 +105,10 @@ async def my_account(message: types.Message):
     )
 
 
-@router.callback_query(lambda q: q.data == "profile")
-async def profile_callback(callback: CallbackQuery):
-    await register_user_if_not_exists(callback)
-    user_info = await get_user_info(callback=callback)
-    await bot.edit_message_text(
-        chat_id=callback.from_user.id,
-        message_id=callback.message.message_id,
-        text=user_info[0],
-        parse_mode=ParseMode.HTML,
-        reply_markup=user_info[1],
-    )
-
-
-async def dialogue_button_creation(user_id: int, message_id: int = None):
-    dialogs = await db.get_user_dialogs(user_id, "_id")
-
-    page = 1
-    items_per_page = 3
-    pages = [
-        dialogs[i: i + items_per_page][::-1]
-        for i in range(0, len(dialogs), items_per_page)
-    ]
-
-    if page > len(pages):
-        page = len(pages)
-
-    if not pages:
-        await bot.send_message(user_id, text="У вас нет активных диалогов!")
-        return
-
-    current_page = pages[page - 1]
-
-    all_buttons = []
-    for dialog in current_page:
-        name = await db.get_dialog_attribute(dialog, "name")
-        time = str(await db.get_dialog_attribute(dialog, "start_time")).split(".")[0]
-        time_object = datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
-        formatted_time = time_object.strftime("%d.%m.%Y")
-        all_buttons.append(
-            [
-                InlineKeyboardButton(
-                    text=f"{name} {formatted_time}", callback_data=f"go_dialog|{dialog}"
-                )
-            ]
-        )
-
-    all_buttons.reverse()
-    pagination_buttons = []
-    sub = await db.get_user_attribute(user_id, "subscriber")
-    buttons = []
-    if not sub:
-        for i in range(min(len(all_buttons), 3)):
-            buttons.append(all_buttons[i])
-    else:
-        buttons = all_buttons
-
-    if len(pages) > 1:
-        if page > 1:
-            pagination_buttons.append(
-                InlineKeyboardButton(
-                    text="Предыдущая страница⬅️", callback_data=f"prev_page|{page}"
-                )
-            )
-        if page < len(pages):
-            pagination_buttons.append(
-                InlineKeyboardButton(
-                    text="Следующая страница➡️", callback_data=f"next_page|{page}"
-                )
-            )
-
-    profile = InlineKeyboardButton(text="К профилю🖼️", callback_data="profile")
-    dialogue_inline = InlineKeyboardButton(
-        text="Новый диалог🗣️", callback_data="new_dialogue"
-    )
-    buttons.append([profile])
-    buttons.append([dialogue_inline])
-
-    reply_markup = InlineKeyboardMarkup(inline_keyboard=buttons + [pagination_buttons])
-
-    if not dialogs:
-        await bot.send_message(chat_id=user_id, text="У вас нет активных диалогов.")
-        return
-
-    if message_id:
-        await bot.edit_message_text(
-            chat_id=user_id,
-            message_id=message_id,
-            text=f"Страница {page} из {len(pages)}\n\nТекущие диалоги:",
-            reply_markup=reply_markup,
-        )
-    else:
-        await bot.send_message(
-            chat_id=user_id,
-            text=f"Страница {page} из {len(pages)}\n\nТекущие диалоги:",
-            reply_markup=reply_markup,
-        )
-
-
 @dp.message(F.text == "Мои диалоги")
 async def dialog_handler(message: Message):
     user_id = message.from_user.id
     await dialogue_button_creation(user_id)
-
-
-@router.callback_query(lambda q: q.data == "dialogs")
-async def dialog_handler(callback: CallbackQuery):
-    user_id = callback.from_user.id
-    await dialogue_button_creation(user_id, callback.message.message_id)
-
-
-@router.callback_query(lambda q: q.data.startswith(("prev_page", "next_page")))
-async def handle_pagination(callback: CallbackQuery):
-    user_id = callback.from_user.id
-    action, page = callback.data.split("|")
-    page = int(page)
-    dialogs = await db.get_user_dialogs(user_id, "_id")
-
-    items_per_page = 3
-    pages = [
-        dialogs[i: i + items_per_page][::-1]
-        for i in range(0, len(dialogs), items_per_page)
-    ]
-
-    if action == "prev_page":
-        page -= 1
-    elif action == "next_page":
-        page += 1
-
-    if page < 1:
-        page = 1
-    elif page > len(pages):
-        page = len(pages)
-
-    current_page = pages[page - 1]
-
-    all_buttons = []
-    for dialog in current_page:
-        name = await db.get_dialog_attribute(dialog, "name")
-        time = str(await db.get_dialog_attribute(dialog, "start_time")).split(".")[0]
-        time_object = datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
-        formatted_time = time_object.strftime("%d.%m.%Y")
-        all_buttons.append(
-            [
-                InlineKeyboardButton(
-                    text=f"{name} {formatted_time}", callback_data=f"go_dialog|{dialog}"
-                )
-            ]
-        )
-
-    pagination_buttons = []
-
-    sub = await db.get_user_attribute(user_id, "subscriber")
-    buttons = []
-    if not sub:
-        for i in range(min(len(all_buttons), 3)):
-            buttons.append(all_buttons[i])
-    else:
-        buttons = all_buttons
-
-    if len(pages) > 1:
-        if page > 1:
-            pagination_buttons.append(
-                InlineKeyboardButton(
-                    text="Предыдущая страница⬅️", callback_data=f"prev_page|{page}"
-                )
-            )
-        if page < len(pages):
-            pagination_buttons.append(
-                InlineKeyboardButton(
-                    text="Следующая страница➡️", callback_data=f"next_page|{page}"
-                )
-            )
-
-    profile = InlineKeyboardButton(text="К профилю🖼️", callback_data="profile")
-    dialogue_inline = InlineKeyboardButton(
-        text="Новый диалог🗣️", callback_data="new_dialogue"
-    )
-    buttons.append([profile])
-    buttons.append([dialogue_inline])
-
-    reply_markup = InlineKeyboardMarkup(inline_keyboard=buttons + [pagination_buttons])
-    await callback.answer()
-    await bot.edit_message_text(
-        message_id=callback.message.message_id,
-        chat_id=user_id,
-        text=f"Страница {page} из {len(pages)}\n\nТекущие диалоги:",
-        reply_markup=reply_markup,
-    )
-
-
-@router.callback_query(lambda q: q.data.startswith("go_dialog"))
-async def callback_select_mode(callback: CallbackQuery):
-    await callback.answer()
-    user = callback.from_user.id
-    dialogue_id = callback.data.split("|")[1]
-    chat_mode = await db.get_dialog_attribute(dialogue_id, "chat_mode")
-
-    await db.set_user_attribute(user, "current_dialog_id", dialogue_id)
-    if await db.get_dialog_messages(user, dialogue_id):
-        last_message = (await db.get_dialog_messages(user, dialogue_id))[-1]["bot"]
-        await bot.edit_message_text(
-            message_id=callback.message.message_id,
-            chat_id=user,
-            text=last_message,
-            parse_mode="MARKDOWN",
-        )
-    else:
-        await bot.edit_message_text(
-            message_id=callback.message.message_id,
-            chat_id=user,
-            text=config.chat_modes[chat_mode]["welcome_message"],
-        )
 
 
 @dp.message(F.text == "Новый диалог")
@@ -432,50 +166,11 @@ Eсли Вам достаточно бесплатного тарифа, мож�
     )
 
 
-@router.callback_query(lambda q: q.data.startswith("pay"))
-async def proceed_payment(callback: CallbackQuery):
-    await callback.answer()
-    msg = await bot.send_message(callback.from_user.id, "Создаем ссылку для оплаты...")
-
-    data = callback.data.split("|")
-    amount = int(data[2])
-
-    pay_info = await payments.create_payment(callback.from_user.id, amount)
-    pay_redirect = pay_info["confirmation"]["confirmation_url"]
-
-    go_button = InlineKeyboardButton(text="Перейти в оплате", url=pay_redirect)
-    reply_markup = InlineKeyboardMarkup(inline_keyboard=[[go_button]])
-
-    await bot.edit_message_text(
-        chat_id=callback.from_user.id,
-        message_id=msg.message_id,
-        text=f"""Сумма к оплате составляет {amount} рублей. Подписка автоматически зачислиться на ваш баланс.""",
-        disable_web_page_preview=True,
-        reply_markup=reply_markup,
-    )
-
-
 @dp.message(Form.type_name)
 async def select_mode(message: Message):
     await db.set_user_attribute(message.from_user.id, "name", message.text)
     text, reply_markup = get_chat_mode_menu(0)
     await bot.send_message(message.from_user.id, text=text, reply_markup=reply_markup)
-
-
-@router.callback_query(lambda q: q.data.startswith("set_chat_mode"))
-async def callback_select_mode(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
-    chat_mode = callback.data.split("|")[1]
-    await db.set_user_attribute(callback.from_user.id, "current_chat_mode", chat_mode)
-    name = await db.get_user_attribute(callback.from_user.id, "name")
-    await bot.edit_message_text(
-        chat_id=callback.from_user.id,
-        message_id=callback.message.message_id,
-        text=f"{config.chat_modes[chat_mode]['welcome_message']}",
-        parse_mode=ParseMode.HTML,
-    )
-    await db.start_new_dialog(name=name, user_id=callback.from_user.id)
-    await state.clear()
 
 
 def get_chat_mode_menu(page_index: int):
@@ -503,22 +198,16 @@ def get_chat_mode_menu(page_index: int):
     return text, reply_markup
 
 
-async def register_user_if_not_exists(message):
-    user = message.from_user
-    if not await db.check_if_user_exists(user.id):
-        await db.add_new_user(user.id, user.username)
-
-
 @dp.message(F.text.startswith("/"))
 async def not_existing_command(message: Message):
-    await register_user_if_not_exists(message)
+    await db.register_user_if_not_exists(message)
     await message.reply("Такой команды не существует!")
 
 
 @dp.message()
 async def message_handler(message: Message):
     user_id = message.from_user.id
-    await register_user_if_not_exists(message)
+    await db.register_user_if_not_exists(message)
 
     text = await bot.send_message(
         user_id, "Генерирую ответ...", disable_notification=True
@@ -608,25 +297,6 @@ async def is_subscriber_channel(user_id: int):
     if user_channel_status.status == ChatMemberStatus.LEFT:
         return False
     return True
-
-
-@router.callback_query(lambda q: q.data == "check_sub")
-async def is_sub_channel(callback: CallbackQuery):
-    user_channel_status = await bot.get_chat_member(
-        chat_id=config.group_id, user_id=callback.from_user.id
-    )
-    if user_channel_status.status == ChatMemberStatus.LEFT:
-        await bot.answer_callback_query(
-            callback_query_id=callback.id,
-            text="Чтобы использовать бота, необходимо быть подписанным на канал",
-        )
-    else:
-        await callback.answer()
-        await bot.edit_message_caption(
-            chat_id=callback.from_user.id,
-            message_id=callback.message.message_id,
-            caption=config.sub_true_message,
-        )
 
 
 async def change_dots(message_id, chat_id):
@@ -722,7 +392,6 @@ async def main():
     logging.log(logging.DEBUG, msg="Бот запущен!!!")
 
     scheduler.start()
-    dp.include_router(router)
     await dp.start_polling(bot)
 
 
@@ -730,6 +399,6 @@ if __name__ == "__main__":
     openai.util.logger.setLevel(logging.WARNING)
     logging.getLogger("aiogram").setLevel(logging.WARNING)
 
-    logging.basicConfig(filename="bot/logs/debug.lg", filemode="a", level=logging.DEBUG)
+    logging.basicConfig(filename="logs/debug.lg", filemode="a", level=logging.DEBUG)
 
     asyncio.run(main())
