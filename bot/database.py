@@ -135,3 +135,8 @@ class Database:
             {"_id": dialog_id, "user_id": user_id},
             {"$set": {"messages": dialog_messages}},
         )
+
+    async def register_user_if_not_exists(self, message):
+        user = message.from_user
+        if not await self.check_if_user_exists(user.id):
+            await self.add_new_user(user.id, user.username)

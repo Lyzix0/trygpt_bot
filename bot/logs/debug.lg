@@ -1,1 +1,61 @@
 
+DEBUG:asyncio:Using proactor: IocpProactor
+DEBUG:tzlocal:Looking up time zone info from registry
+INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+DEBUG:root:\u0411\u043e\u0442 \u0437\u0430\u043f\u0443\u0449\u0435\u043d!!!
+INFO:apscheduler.scheduler:Added job "update_all_users_prompts" to job store "default"
+INFO:apscheduler.scheduler:Added job "update_subs_users" to job store "default"
+INFO:apscheduler.scheduler:Added job "check_payments" to job store "default"
+INFO:apscheduler.scheduler:Added job "check_all_keys" to job store "default"
+INFO:apscheduler.scheduler:Scheduler started
+DEBUG:apscheduler.scheduler:Looking for jobs to run
+DEBUG:apscheduler.scheduler:Next wakeup is due at 2024-04-15 22:41:15.624545+03:00 (in 19.997994 seconds)
+DEBUG:apscheduler.scheduler:Looking for jobs to run
+DEBUG:apscheduler.scheduler:Next wakeup is due at 2024-04-15 22:41:35.624545+03:00 (in 19.977526 seconds)
+INFO:apscheduler.executors.default:Running job "check_payments (trigger: interval[0:00:20], next run at: 2024-04-15 22:41:35 MSK)" (scheduled at 2024-04-15 22:41:15.624545+03:00)
+INFO:apscheduler.executors.default:Job "check_payments (trigger: interval[0:00:20], next run at: 2024-04-15 22:41:35 MSK)" executed successfully
+DEBUG:apscheduler.scheduler:Looking for jobs to run
+DEBUG:apscheduler.scheduler:Next wakeup is due at 2024-04-15 22:41:55.624545+03:00 (in 19.989512 seconds)
+INFO:apscheduler.executors.default:Running job "check_payments (trigger: interval[0:00:20], next run at: 2024-04-15 22:41:55 MSK)" (scheduled at 2024-04-15 22:41:35.624545+03:00)
+INFO:apscheduler.executors.default:Job "check_payments (trigger: interval[0:00:20], next run at: 2024-04-15 22:41:55 MSK)" executed successfully
+WARNING:root:'choices'
+WARNING:root:'choices'
+WARNING:root:'choices'
+WARNING:root:'choices'
+WARNING:root:'choices'
+WARNING:root:'choices'
+WARNING:root:'choices'
+WARNING:root:'choices'
+WARNING:root:'choices'
+WARNING:root:'choices'
+WARNING:root:'choices'
+WARNING:root:'choices'
+WARNING:root:'choices'
+DEBUG:apscheduler.scheduler:Looking for jobs to run
+DEBUG:apscheduler.scheduler:Next wakeup is due at 2024-04-15 22:42:15.624545+03:00 (in 19.998369 seconds)
+INFO:apscheduler.executors.default:Running job "check_payments (trigger: interval[0:00:20], next run at: 2024-04-15 22:42:15 MSK)" (scheduled at 2024-04-15 22:41:55.624545+03:00)
+WARNING:root:'choices'
+INFO:apscheduler.executors.default:Job "check_payments (trigger: interval[0:00:20], next run at: 2024-04-15 22:42:15 MSK)" executed successfully
+WARNING:root:'choices'
+WARNING:root:'choices'
+WARNING:root:'choices'
+WARNING:root:'choices'
+WARNING:root:'choices'
+WARNING:root:'choices'
+DEBUG:apscheduler.scheduler:Looking for jobs to run
+DEBUG:apscheduler.scheduler:Next wakeup is due at 2024-04-15 22:42:35.624545+03:00 (in 19.980819 seconds)
+INFO:apscheduler.executors.default:Running job "check_payments (trigger: interval[0:00:20], next run at: 2024-04-15 22:42:35 MSK)" (scheduled at 2024-04-15 22:42:15.624545+03:00)
+INFO:apscheduler.executors.default:Job "check_payments (trigger: interval[0:00:20], next run at: 2024-04-15 22:42:35 MSK)" executed successfully
+DEBUG:apscheduler.scheduler:Looking for jobs to run
+DEBUG:apscheduler.scheduler:Next wakeup is due at 2024-04-15 22:42:55.624545+03:00 (in 19.992283 seconds)
+INFO:apscheduler.executors.default:Running job "check_payments (trigger: interval[0:00:20], next run at: 2024-04-15 22:42:55 MSK)" (scheduled at 2024-04-15 22:42:35.624545+03:00)
+INFO:apscheduler.executors.default:Job "check_payments (trigger: interval[0:00:20], next run at: 2024-04-15 22:42:55 MSK)" executed successfully
+DEBUG:apscheduler.scheduler:Looking for jobs to run
+DEBUG:apscheduler.scheduler:Next wakeup is due at 2024-04-15 22:42:55.624545+03:00 (in 0.002317 seconds)
+DEBUG:apscheduler.scheduler:Looking for jobs to run
+DEBUG:apscheduler.scheduler:Next wakeup is due at 2024-04-15 22:43:15.624545+03:00 (in 19.986317 seconds)
+INFO:apscheduler.executors.default:Running job "check_payments (trigger: interval[0:00:20], next run at: 2024-04-15 22:43:15 MSK)" (scheduled at 2024-04-15 22:42:55.624545+03:00)
+INFO:apscheduler.executors.default:Job "check_payments (trigger: interval[0:00:20], next run at: 2024-04-15 22:43:15 MSK)" executed successfully
