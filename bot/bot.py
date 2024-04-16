@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from datetime import datetime, timedelta
 
 from aiogram.fsm.context import FSMContext
@@ -179,8 +180,8 @@ def get_chat_mode_menu(page_index: int):
 
     chat_mode_keys = list(config.chat_modes.keys())
     page_chat_mode_keys = chat_mode_keys[
-                          page_index * n_chat_modes_per_page: (page_index + 1) * n_chat_modes_per_page
-                          ]
+        page_index * n_chat_modes_per_page : (page_index + 1) * n_chat_modes_per_page
+    ]
 
     keyboard = []
     for chat_mode_key in page_chat_mode_keys:
@@ -302,7 +303,7 @@ async def is_subscriber_channel(user_id: int):
 async def change_dots(message_id, chat_id):
     num_dots = 0
     for i in range(
-            100
+        100
     ):  # не ставлю бесконечный цикл, так после 1000 прохода ошибка (слишком частый редакт сообщения)
         message = f'Генерирую ответ{"." * num_dots}'
         await bot.edit_message_text(
@@ -384,8 +385,7 @@ async def main():
     scheduler.add_job(update_subs_users, "interval", hours=3)
     scheduler.add_job(check_payments, "interval", seconds=20)
     scheduler.add_job(
-        check_all_keys, "interval", days=1,
-        start_date=datetime(2023, 11, 14, 21, 12)
+        check_all_keys, "interval", days=1, start_date=datetime(2023, 11, 14, 21, 12)
     )
 
     print("Бот запущен!")

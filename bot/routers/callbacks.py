@@ -39,7 +39,7 @@ async def handle_pagination(callback: CallbackQuery):
 
     items_per_page = 3
     pages = [
-        dialogs[i: i + items_per_page][::-1]
+        dialogs[i : i + items_per_page][::-1]
         for i in range(0, len(dialogs), items_per_page)
     ]
 
@@ -137,7 +137,9 @@ async def callback_select_mode(callback: CallbackQuery):
 @router.callback_query(lambda q: q.data.startswith("pay"))
 async def proceed_payment(callback: CallbackQuery):
     await callback.answer()
-    msg = await callback.bot.send_message(callback.from_user.id, "Создаем ссылку для оплаты...")
+    msg = await callback.bot.send_message(
+        callback.from_user.id, "Создаем ссылку для оплаты..."
+    )
 
     data = callback.data.split("|")
     amount = int(data[2])
